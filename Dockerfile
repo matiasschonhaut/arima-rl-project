@@ -1,9 +1,10 @@
 # =============================================================================
 # Proyecto: Agentificación de Modelos ARIMA con Aprendizaje Reforzado
 # Imagen Docker FINAL (modelo preentrenado)
-# =============================================================================
+# =======================================================================
 
-FROM python:3.10-slim
+FROM python:3.10-slim-bullseye
+
 
 LABEL maintainer="Tomás Stevenson & Matías Schonhaut"
 LABEL description="Optimización de Modelos ARIMA vía RL (pretrained agent)"
