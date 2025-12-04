@@ -1,0 +1,198 @@
+# ============================================================================
+# Proyecto: Agentificación de Modelos ARIMA con Aprendizaje Reforzado
+# Archivo: config.yaml
+# Descripción: Configuración completa del sistema
+# ============================================================================
+
+# ============================================================================
+# CONFIGURACIÓN DE DATOS
+# ============================================================================
+data:
+  source: "data/germany_monthly_power.csv"
+  train_months: 48
+  val_months: 6
+  test_months: 6
+  
+  # Procesamiento
+  handle_missing: "interpolate"  # Opciones: interpolate, forward_fill, drop
+  outlier_detection: true
+  outlier_threshold: 3.0  # Desviaciones estándar
+  
+  # Características para RL
+  acf_lags: 12
+  pacf_lags: 12
+
+# ============================================================================
+# CONFIGURACIÓN DEL AGENTE RL
+# ============================================================================
+rl_agent:
+  # Algoritmo DQN
+  algorithm: "DQN"
+  policy: "MlpPolicy"
+  
+  # Hiperparámetros de entrenamiento
+  total_timesteps: 50000
+  learning_rate: 0.0001
+  buffer_size: 10000
+  learning_starts: 100
+  batch_size: 32
+  tau: 1.0
+  gamma: 0.99
+  train_freq: 4
+  gradient_steps: 1
+  target_update_interval: 1000
+  
+  # Exploración
+  exploration_fraction: 0.3
+  exploration_initial_eps: 1.0
+  exploration_final_eps: 0.05
+  
+  # Arquitectura de red neuronal
+  policy_kwargs:
+    net_arch: [128, 128]
+    activation_fn: "relu"
+  
+  # Rutas
+  model_save_path: "models/arima_dqn_agent"
+  tensorboard_log: "models/tensorboard_logs"
+  checkpoint_freq: 5000
+  
+  # Device
+  device: "auto"  # Opciones: auto, cpu, cuda
+  verbose: 1
+
+# ============================================================================
+# CONFIGURACIÓN DEL ENTORNO GYMNASIUM
+# ============================================================================
+environment:
+  # Espacio de acciones (ARIMA)
+  p_max: 5
+  d_max: 2
+  q_max: 4
+  
+  # Configuración de episodios
+  max_steps: 50
+  
+  # Pesos de la función de recompensa
+  reward_weights:
+    accuracy: 1.0      # Precisión de predicción (RMSE, MAE, MAPE)
+    aic: 0.3          # Complejidad del modelo (AIC)
+    time: 0.1         # Eficiencia computacional
+    diagnostics: 0.2   # Calidad de residuos
+  
+  # Umbrales para bonificaciones
+  aic_improvement_bonus: 1.0
+  rmse_improvement_bonus: 0.5
+
+# ============================================================================
+# CONFIGURACIÓN DE MODELOS ARIMA
+# ============================================================================
+arima:
+  # Rango de hiperparámetros para búsqueda
+  p_range: [0, 5]
+  d_range: [0, 2]
+  q_range: [0, 4]
+  
+  # Criterios de selección
+  selection_criterion: "aic"  # Opciones: aic, bic, aicc, rmse
+  
+  # Forecast
+  confidence_level: 0.95  # Para intervalos de confianza
+  
+  # Diagnóstico de residuos
+  residuals_checks:
+    mean_threshold: 0.1
+    ljung_box_pvalue: 0.05
+    jarque_bera_pvalue: 0.05
+    variance_ratio_threshold: 2.0
+  
+  # Timeout
+  max_training_time: 30  # Segundos por modelo
+
+# ============================================================================
+# CONFIGURACIÓN DE LA INTERFAZ WEB (STREAMLIT)
+# ============================================================================
+streamlit:
+  # Servidor
+  port: 8501
+  address: "0.0.0.0"
+  headless: true
+  
+  # Tema
+  theme:
+    primaryColor: "#1f77b4"
+    backgroundColor: "#ffffff"
+    secondaryBackgroundColor: "#f0f2f6"
+    textColor: "#262730"
+    font: "sans serif"
+  
+  # Caché
+  enable_caching: true
+  cache_ttl: 3600  # Segundos
+  
+  # Límites
+  max_upload_size: 200  # MB
+  max_message_size: 200  # MB
+
+# ============================================================================
+# CONFIGURACIÓN DE LOGGING
+# ============================================================================
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_file: "assets/logs/app.log"
+  rotation: "midnight"
+  backup_count: 7
+
+# ============================================================================
+# CONFIGURACIÓN DE EXPORTACIÓN
+# ============================================================================
+export:
+  # Formatos soportados
+  formats: ["csv", "xlsx", "json"]
+  
+  # Compresión
+  compression: "gzip"  # Opciones: gzip, bz2, zip, none
+  
+  # Metadatos
+  include_metadata: true
+  include_diagnostics: true
+
+# ============================================================================
+# CONFIGURACIÓN DE VALIDACIÓN Y TESTING
+# ============================================================================
+validation:
+  # Validación cruzada temporal
+  n_splits: 5
+  
+  # Métricas de evaluación
+  metrics:
+    - "rmse"
+    - "mae"
+    - "mape"
+    - "r2"
+    - "aic"
+    - "bic"
+  
+  # Benchmarks
+  baseline_models:
+    - [1, 1, 1]  # ARIMA(1,1,1)
+    - [2, 1, 1]  # ARIMA(2,1,1)
+    - [1, 1, 2]  # ARIMA(1,1,2)
+
+# ============================================================================
+# CONFIGURACIÓN AVANZADA
+# ============================================================================
+advanced:
+  # Paralelización
+  n_jobs: -1  # -1 usa todos los cores disponibles
+  
+  # Seeds para reproducibilidad
+  random_seed: 42
+  
+  # Optimización de memoria
+  low_memory_mode: false
+  
+  # Debugging
+  debug_mode: false
+  profiling_enabled: false
